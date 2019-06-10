@@ -6,7 +6,7 @@ import i2c_lib
 from time import *
 
 # LCD Address
-ADDRESS = 0x3f
+ADDRESS = 0x26
 
 # commands
 LCD_CLEARDISPLAY = 0x01
@@ -55,6 +55,8 @@ Rw = 0b00000010 # Read/Write bit
 Rs = 0b00000001 # Register select bit
 
 class lcd:
+
+   backlight_status = LCD_BACKLIGHT
    #initializes objects and lcd
    def __init__(self):
       self.lcd_device = i2c_lib.i2c_device(ADDRESS)
@@ -72,13 +74,13 @@ class lcd:
 
    # clocks EN to latch command
    def lcd_strobe(self, data):
-      self.lcd_device.write_cmd(data | En | LCD_BACKLIGHT)
+      self.lcd_device.write_cmd(data | En | self.backlight_status)
       sleep(.0005)
-      self.lcd_device.write_cmd(((data & ~En) | LCD_BACKLIGHT))
+      self.lcd_device.write_cmd(((data & ~En) | self.backlight_status))
       sleep(.0001)
 
    def lcd_write_four_bits(self, data):
-      self.lcd_device.write_cmd(data | LCD_BACKLIGHT)
+      self.lcd_device.write_cmd(data | self.backlight_status)
       self.lcd_strobe(data)
 
    # write a command to lcd
@@ -90,8 +92,10 @@ class lcd:
    def lcd_backlight(self, state):
       if state in ("on","On","ON"):
          self.lcd_device.write_cmd(LCD_BACKLIGHT)
+         self.backlight_status = LCD_BACKLIGHT
       elif state in ("off","Off","OFF"):
          self.lcd_device.write_cmd(LCD_NOBACKLIGHT)
+         self.backlight_status = LCD_NOBACKLIGHT
       else:
          print("Unknown State!")
 
